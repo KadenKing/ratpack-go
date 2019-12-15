@@ -6,16 +6,14 @@ import (
 	"net/http"
 )
 
-type logger struct {
-	handler http.Handler
+func ServeHTTP(w http.ResponseWriter, r *http.Request) {
+
 }
 
-func (l *logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	body, _ := ioutil.ReadAll(r.Body)
-	log.Printf("[%s] body:\n%s", r.Method, string(body))
-	l.handler.ServeHTTP(w, r)
-}
-
-func NewLogger(handler http.Handler) *logger {
-	return &logger{handler}
+func addLogger(f http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		body, _ := ioutil.ReadAll(r.Body)
+		log.Printf("[%s] body:\n%s", r.Method, string(body))
+		f(w, r)
+	}
 }
