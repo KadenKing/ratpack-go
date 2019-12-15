@@ -1,8 +1,9 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -21,15 +22,29 @@ func getPort() string {
 }
 
 func testPointHandler(w http.ResponseWriter, r *http.Request) {
-	reqBody, _ := ioutil.ReadAll(r.Body)
+	log.Println("point handler:")
+	r.ParseForm()
+	slackRequest, _ := json.Marshal(map[string]string{
+		"text": "howdy partner",
+	})
 
-	fmt.Fprint(w, string(reqBody))
+	responseUrl := r.Form.Get("response_url")
+	fmt.Printf("url: %s", responseUrl)
+
+	_, err := http.Post(r.Form.Get("response_url"), "application/json", bytes.NewBuffer(slackRequest))
+	if err != nil {
+		log.Fatal((err))
+	}
 }
 
 func main() {
-	http.HandleFunc("/api/give", testPointHandler)
-	http.HandleFunc("/", handler)
-	err := http.ListenAndServe(getPort(), nil)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/give", testPointHandler)
+	mux.HandleFunc("/", handler)
+
+	withLogging := NewLogger(mux)
+
+	err := http.ListenAndServe(getPort(), withLogging)
 	if err != nil {
 		log.Fatal(err)
 	}
