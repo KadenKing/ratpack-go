@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -19,7 +20,14 @@ func getPort() string {
 	return ":" + port
 }
 
+func testPointHandler(w http.ResponseWriter, r *http.Request) {
+	reqBody, _ := ioutil.ReadAll(r.Body)
+
+	fmt.Fprint(w, reqBody)
+}
+
 func main() {
+	http.HandleFunc("/api/give", testPointHandler)
 	http.HandleFunc("/", handler)
 	err := http.ListenAndServe(getPort(), nil)
 	if err != nil {
