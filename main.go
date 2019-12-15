@@ -15,7 +15,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 func getPort() string {
 	port := os.Getenv("PORT")
 	if port == "" {
-		log.Fatal("could not find a port")
+		return ":8080"
 	}
 	return ":" + port
 }
@@ -23,7 +23,7 @@ func getPort() string {
 func testPointHandler(w http.ResponseWriter, r *http.Request) {
 	reqBody, _ := ioutil.ReadAll(r.Body)
 
-	fmt.Fprint(w, reqBody)
+	fmt.Fprint(w, string(reqBody))
 }
 
 func main() {
