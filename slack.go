@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -65,11 +64,11 @@ func (sw slackWriter) Write(p []byte) (n int, err error) {
 	}{
 		Text: text,
 	}
+
 	serialized, err := json.Marshal(payload)
 	if err != nil {
 		return 0, err
 	}
-	fmt.Println(string(serialized))
 
 	r, err := http.Post(sw.destination, "application/json", strings.NewReader(string(serialized)))
 	if err != nil {
