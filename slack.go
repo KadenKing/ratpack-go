@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"io"
-	"io/ioutil"
+	"fmt"
 	"net/http"
+
+	schema "github.com/gorilla/schema"
 )
 
 /**
@@ -22,15 +23,15 @@ trigger_id=876217331607.635202112131.776d240216a617135974615d3ace76e8
 **/
 
 type slackRequest struct {
-	Token       string `json:"token"`
-	TeamDomain  string `json:"team_domain"`
-	ChannelID   string `json:"channel_id"`
-	ChannelName string `json:"channel_name"`
-	UserID      string `json:"user_id"`
-	UserName    string `json:"user_name"`
-	Command     string `json:"command"`
-	ResponseURL string `json:"response_url"`
-	TriggerID   string `json:"trigger_id"`
+	Token       string `schema:"token"`
+	TeamDomain  string `schema:"team_domain"`
+	ChannelID   string `schema:"channel_id"`
+	ChannelName string `schema:"channel_name"`
+	UserID      string `schema:"user_id"`
+	UserName    string `schema:"user_name"`
+	Command     string `schema:"command"`
+	ResponseURL string `schema:"response_url"`
+	TriggerID   string `schema:"trigger_id"`
 }
 
 type slackWriter struct {
@@ -39,12 +40,15 @@ type slackWriter struct {
 
 type slackResponseWriter interface {
 	SetDestination(dest string)
-	Destination() string
 	Write(p []byte) (n int, err error)
 }
 
 func newSlackWriter() *slackWriter {
 	return &slackWriter{}
+}
+
+func (sw *slackWriter) SetDestination(dest string) {
+	sw.destination = dest
 }
 
 func (sw slackWriter) Write(p []byte) (n int, err error) {
@@ -73,10 +77,22 @@ func (sw slackWriter) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-func unmarshalSlackRequest(body io.Reader) slackRequest {
-	b, _ := ioutil.ReadAll(body)
+func unmarshalSlackRequest(r *http.Request) (slackRequest, error) {
+	err := r.ParseForm()
+
+	if err != nil {
+		return slackRequest{}, err
+	}
 
 	var res slackRequest
-	json.Unmarshal(b, &res)
-	return res
+	decoder := schema.NewDecoder()
+
+	fmt.Println(r.PostForm)
+
+	err = decoder.Decode(&res, r.PostForm)
+	if err != nil {
+		return slackRequest{}, err
+	}
+
+	return res, nil
 }

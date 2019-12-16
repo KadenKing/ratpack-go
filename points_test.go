@@ -32,8 +32,21 @@ func getTestSlackParameters() []byte {
 	return s
 }
 
-func newTestSlackWriter() *bytes.Buffer {
-	return bytes.NewBuffer(nil)
+type testSlackWriter struct {
+	buf *bytes.Buffer
+}
+
+func newTestSlackWriter() *testSlackWriter {
+	return &testSlackWriter{buf: bytes.NewBuffer(nil)}
+}
+
+func (b *testSlackWriter) SetDestination(dest string) {
+	b.buf = bytes.NewBufferString(dest)
+}
+
+func (b *testSlackWriter) Write(p []byte) (n int, err error) {
+	b.buf.Write(p)
+	return len(p), nil
 }
 
 func TestHandleGivePoints(t *testing.T) {
@@ -56,7 +69,7 @@ func TestHandleGivePoints(t *testing.T) {
 		t.Errorf("\nexpected %s\ngot %s", expected, rr.Body.String())
 	}
 
-	if slackWriter.String() != "you added points" {
-		t.Errorf("\nexpected: %s\ngot: %s", "you added points", slackWriter.String())
+	if slackWriter.buf.String() != "you added points" {
+		t.Errorf("\nexpected: %s\ngot: %s", "you added points", slackWriter.buf.String())
 	}
 }

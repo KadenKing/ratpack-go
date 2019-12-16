@@ -2,15 +2,25 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 )
 
-func (s *server) handleGivePoints(slackWriter *slackWriter) http.HandlerFunc {
+func (s *server) handleGivePoints(slackWriter slackResponseWriter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		sr := unmarshalSlackRequest(r.Body)
+		sr, err := unmarshalSlackRequest(r)
 
-		fmt.Fprintf(slackWriter, "you added points")
+		if err != nil {
+			log.Fatal(err)
+		}
 
-		fmt.Fprintf(w, "token:%s", sr.Token)
+		if sr.ResponseURL == "" {
+			log.Fatal("no response url given")
+		}
+		slackWriter.SetDestination(sr.ResponseURL)
+		_, err = fmt.Fprintf(slackWriter, "you added points")
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }
