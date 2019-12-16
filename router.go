@@ -15,5 +15,5 @@ func newRouter() router {
 }
 
 func (s *server) routes() {
-	s.router.HandleFunc("/api/give", addLogger(s.handleGivePoints()))
+	s.router.HandleFunc("/api/give", addLogger(s.handleGivePoints(newSlackWriter())))
 }

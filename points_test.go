@@ -32,6 +32,10 @@ func getTestSlackParameters() []byte {
 	return s
 }
 
+func newTestSlackWriter() *bytes.Buffer {
+	return bytes.NewBuffer(nil)
+}
+
 func TestHandleGivePoints(t *testing.T) {
 
 	slackParams := getTestSlackParameters()
@@ -40,12 +44,19 @@ func TestHandleGivePoints(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	slackWriter := newTestSlackWriter()
+
 	rr := httptest.NewRecorder()
 	testServer := newTestServer()
-	handler := http.HandlerFunc(testServer.handleGivePoints())
+	handler := http.HandlerFunc(testServer.handleGivePoints(slackWriter))
+
 	handler.ServeHTTP(rr, req)
 	expected := "token:123"
 	if rr.Body.String() != expected {
 		t.Errorf("\nexpected %s\ngot %s", expected, rr.Body.String())
+	}
+
+	if slackWriter.String() != "you added points" {
+		t.Errorf("\nexpected: %s\ngot: %s", "you added points", slackWriter.String())
 	}
 }

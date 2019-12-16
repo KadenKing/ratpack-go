@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"io/ioutil"
+	"net/http"
 )
 
 /**
@@ -28,6 +31,46 @@ type slackRequest struct {
 	Command     string `json:"command"`
 	ResponseURL string `json:"response_url"`
 	TriggerID   string `json:"trigger_id"`
+}
+
+type slackWriter struct {
+	destination string
+}
+
+type slackResponseWriter interface {
+	SetDestination(dest string)
+	Destination() string
+	Write(p []byte) (n int, err error)
+}
+
+func newSlackWriter() *slackWriter {
+	return &slackWriter{}
+}
+
+func (sw slackWriter) Write(p []byte) (n int, err error) {
+	if sw.destination == "" {
+		return 0, errors.New("no destination to respond to slack specified")
+	}
+
+	text := string(p)
+	payload := struct{ text string }{
+		text: text,
+	}
+	serialized, err := json.Marshal(payload)
+	if err != nil {
+		return 0, err
+	}
+
+	r, err := http.Post(sw.destination, "application/json", bytes.NewReader(serialized))
+	if err != nil {
+		return 0, err
+	}
+
+	if r.StatusCode != 200 {
+		return 0, errors.New("failed to send slack message")
+	}
+
+	return len(p), nil
 }
 
 func unmarshalSlackRequest(body io.Reader) slackRequest {
