@@ -1,11 +1,12 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"strings"
 
 	schema "github.com/gorilla/schema"
 )
@@ -25,6 +26,8 @@ trigger_id=876217331607.635202112131.776d240216a617135974615d3ace76e8
 type slackRequest struct {
 	Token       string `schema:"token"`
 	TeamDomain  string `schema:"team_domain"`
+	TeamID      string `schema:"team_id"`
+	Text        string `schema:"text"`
 	ChannelID   string `schema:"channel_id"`
 	ChannelName string `schema:"channel_name"`
 	UserID      string `schema:"user_id"`
@@ -57,21 +60,25 @@ func (sw slackWriter) Write(p []byte) (n int, err error) {
 	}
 
 	text := string(p)
-	payload := struct{ text string }{
-		text: text,
+	payload := &struct {
+		Text string `json:"text"`
+	}{
+		Text: text,
 	}
 	serialized, err := json.Marshal(payload)
 	if err != nil {
 		return 0, err
 	}
+	fmt.Println(string(serialized))
 
-	r, err := http.Post(sw.destination, "application/json", bytes.NewReader(serialized))
+	r, err := http.Post(sw.destination, "application/json", strings.NewReader(string(serialized)))
 	if err != nil {
 		return 0, err
 	}
 
 	if r.StatusCode != 200 {
-		return 0, errors.New("failed to send slack message")
+		body, _ := ioutil.ReadAll(r.Body)
+		return 0, errors.New(string(body))
 	}
 
 	return len(p), nil
@@ -86,8 +93,6 @@ func unmarshalSlackRequest(r *http.Request) (slackRequest, error) {
 
 	var res slackRequest
 	decoder := schema.NewDecoder()
-
-	fmt.Println(r.PostForm)
 
 	err = decoder.Decode(&res, r.PostForm)
 	if err != nil {
