@@ -17,8 +17,10 @@ func (s *server) handleGivePoints(slackWriter slackResponseWriter) http.HandlerF
 		if sr.ResponseURL == "" {
 			log.Fatal("no response url given")
 		}
+
 		slackWriter.SetDestination(sr.ResponseURL)
 		_, err = fmt.Fprintf(slackWriter, "you added points")
+
 		if err != nil {
 			log.Fatal(err)
 		}

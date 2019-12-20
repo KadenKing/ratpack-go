@@ -2,9 +2,10 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"strings"
 	"testing"
 )
 
@@ -24,12 +25,16 @@ func newTestServer() *server {
 	return &server{}
 }
 
-func getTestSlackParameters() []byte {
-	r := slackRequest{
-		Token: "123",
-	}
-	s, _ := json.Marshal(r)
-	return s
+func getTestSlackParameters() url.Values {
+	// r := slackRequest{
+	// 	Token:       "123",
+	// 	ResponseURL: "abc123",
+	// }
+	data := url.Values{}
+	data.Add("token", "123")
+	data.Add("response_url", "abc")
+	return data
+
 }
 
 type testSlackWriter struct {
@@ -41,7 +46,7 @@ func newTestSlackWriter() *testSlackWriter {
 }
 
 func (b *testSlackWriter) SetDestination(dest string) {
-	b.buf = bytes.NewBufferString(dest)
+
 }
 
 func (b *testSlackWriter) Write(p []byte) (n int, err error) {
@@ -50,12 +55,12 @@ func (b *testSlackWriter) Write(p []byte) (n int, err error) {
 }
 
 func TestHandleGivePoints(t *testing.T) {
-
 	slackParams := getTestSlackParameters()
-	req, err := http.NewRequest("POST", "/api/give", bytes.NewReader(slackParams))
+	req, err := http.NewRequest("POST", "/api/give", strings.NewReader(slackParams.Encode()))
 	if err != nil {
 		t.Fatal(err)
 	}
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	slackWriter := newTestSlackWriter()
 
@@ -64,10 +69,6 @@ func TestHandleGivePoints(t *testing.T) {
 	handler := http.HandlerFunc(testServer.handleGivePoints(slackWriter))
 
 	handler.ServeHTTP(rr, req)
-	expected := "token:123"
-	if rr.Body.String() != expected {
-		t.Errorf("\nexpected %s\ngot %s", expected, rr.Body.String())
-	}
 
 	if slackWriter.buf.String() != "you added points" {
 		t.Errorf("\nexpected: %s\ngot: %s", "you added points", slackWriter.buf.String())
