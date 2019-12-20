@@ -15,5 +15,5 @@ func newRouter() router {
 }
 
 func (s *server) routes() {
-	s.router.HandleFunc("/api/give", addSlackAuthenticity(s.handleGivePoints(newSlackWriter())))
+	s.router.HandleFunc("/api/give", addSlackAuthenticity(s.handleGivePoints(newSlackWriterGenerator())))
 }

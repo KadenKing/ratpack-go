@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -25,14 +26,11 @@ func newTestServer() *server {
 	return &server{}
 }
 
-func getTestSlackParameters() url.Values {
-	// r := slackRequest{
-	// 	Token:       "123",
-	// 	ResponseURL: "abc123",
-	// }
+func getTestSlackParameters(vals ...[2]string) url.Values {
 	data := url.Values{}
-	data.Add("token", "123")
-	data.Add("response_url", "abc")
+	for _, val := range vals {
+		data.Add(val[0], val[1])
+	}
 	return data
 
 }
@@ -45,32 +43,66 @@ func newTestSlackWriter() *testSlackWriter {
 	return &testSlackWriter{buf: bytes.NewBuffer(nil)}
 }
 
-func (b *testSlackWriter) SetDestination(dest string) {
-
-}
-
 func (b *testSlackWriter) Write(p []byte) (n int, err error) {
 	b.buf.Write(p)
 	return len(p), nil
 }
 
 func TestHandleGivePoints(t *testing.T) {
-	slackParams := getTestSlackParameters()
-	req, err := http.NewRequest("POST", "/api/give", strings.NewReader(slackParams.Encode()))
-	if err != nil {
-		t.Fatal(err)
+	type test struct {
+		params          url.Values
+		expectedWritten string
+		expectedStatus  int
+		expectedBody    string
 	}
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	slackWriter := newTestSlackWriter()
+	tests := []test{
+		{
+			params: getTestSlackParameters(
+				[2]string{"response_url", "abc123"},
+			),
+			expectedWritten: "you added points",
+			expectedStatus:  200,
+			expectedBody:    "",
+		},
+		{
+			params:          getTestSlackParameters(),
+			expectedWritten: "",
+			expectedStatus:  500,
+			expectedBody:    "no response url given",
+		},
+	}
 
-	rr := httptest.NewRecorder()
-	testServer := newTestServer()
-	handler := http.HandlerFunc(testServer.handleGivePoints(slackWriter))
+	for _, currentTest := range tests {
+		slackParams := currentTest.params
+		req, err := http.NewRequest("POST", "/api/give", strings.NewReader(slackParams.Encode()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	handler.ServeHTTP(rr, req)
+		slackWriter := newTestSlackWriter()
 
-	if slackWriter.buf.String() != "you added points" {
-		t.Errorf("\nexpected: %s\ngot: %s", "you added points", slackWriter.buf.String())
+		slackWriterGenerator := func(url string) slackResponseWriter {
+			return slackWriter
+		}
+
+		rr := httptest.NewRecorder()
+		testServer := newTestServer()
+		handler := http.HandlerFunc(testServer.handleGivePoints(slackWriterGenerator))
+
+		handler.ServeHTTP(rr, req)
+
+		if slackWriter.buf.String() != currentTest.expectedWritten {
+			t.Errorf("\nexpected to be written to slackwriter: %s\ngot: %s", currentTest.expectedWritten, slackWriter.buf.String())
+		}
+		res := rr.Result()
+		if res.StatusCode != currentTest.expectedStatus {
+			t.Errorf("\nexpected status code: %d\ngot: %d\n", currentTest.expectedStatus, res.StatusCode)
+		}
+		body, _ := ioutil.ReadAll(res.Body)
+		if string(body) != currentTest.expectedBody {
+			t.Errorf("\nexpected response body: %s\n got: %s\n", currentTest.expectedBody, body)
+		}
 	}
 }

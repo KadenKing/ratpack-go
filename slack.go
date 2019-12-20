@@ -41,16 +41,17 @@ type slackWriter struct {
 }
 
 type slackResponseWriter interface {
-	SetDestination(dest string)
 	Write(p []byte) (n int, err error)
 }
 
-func newSlackWriter() *slackWriter {
-	return &slackWriter{}
-}
+type slackResponseWriterGenerator func(url string) slackResponseWriter
 
-func (sw *slackWriter) SetDestination(dest string) {
-	sw.destination = dest
+func newSlackWriterGenerator() slackResponseWriterGenerator {
+	return func(url string) slackResponseWriter {
+		return &slackWriter{
+			destination: url,
+		}
+	}
 }
 
 func (sw slackWriter) Write(p []byte) (n int, err error) {
