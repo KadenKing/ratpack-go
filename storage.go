@@ -1,7 +1,11 @@
 package main
 
 type storage interface {
-	Save(key string, value interface{}) error
+	pointIncrementer
+}
+
+type pointIncrementer interface {
+	IncrementPoints(user string, points int64) error
 }
 
 type postgres struct {
@@ -12,6 +16,6 @@ func newPostgres() *postgres {
 	return &postgres{}
 }
 
-func (p *postgres) Save(key string, value interface{}) error {
+func (p *postgres) IncrementPoints(user string, points int64) error {
 	return nil
 }

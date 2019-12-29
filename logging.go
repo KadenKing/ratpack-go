@@ -6,10 +6,6 @@ import (
 	"net/http"
 )
 
-func ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
-}
-
 func addLogger(f http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, _ := ioutil.ReadAll(r.Body)

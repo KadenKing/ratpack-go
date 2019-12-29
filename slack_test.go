@@ -3,34 +3,36 @@ package main
 import "testing"
 
 type mockDatabase struct {
-	val string
+	user   string
+	points int64
 }
 
-func (d *mockDatabase) Save(key string, value interface{}) error {
-	d.val = key
+func (d *mockDatabase) IncrementPoints(user string, points int64) error {
+	d.user = user
+	d.points += points
 	return nil
 }
 
 func TestParseCommand(t *testing.T) {
 	type test struct {
-		input         string
-		expected      string
-		expectedError string
+		input          string
+		expectedUser   string
+		expectedPoints int64
+		expectedError  string
 	}
 	tests := []test{
 		{
-			input:         "give kaden 250",
-			expected:      "give 250",
-			expectedError: "",
+			input:          "give kaden 250",
+			expectedUser:   "kaden",
+			expectedPoints: 250,
+			expectedError:  "",
 		},
 		{
 			input:         "give kaden",
-			expected:      "",
 			expectedError: "Give command expected 2 arguments, got 1",
 		},
 		{
 			input:         "give kaden flajsldkf",
-			expected:      "",
 			expectedError: "Could not parse point value as integer",
 		},
 	}
@@ -54,8 +56,11 @@ func TestParseCommand(t *testing.T) {
 
 		command()
 
-		if storage.val != test.expected {
-			t.Errorf("\nexpected storage to have saved: %s\ngot: %s\n", test.expected, storage.val)
+		if storage.user != test.expectedUser {
+			t.Errorf("\nexpected storage to have updated user: %s\ngot: %s\n", test.expectedUser, storage.user)
+		}
+		if storage.points != test.expectedPoints {
+			t.Errorf("\nexpected storage to have updated points: %d\ngot: %d\n", test.expectedPoints, storage.points)
 		}
 	}
 }
