@@ -3,8 +3,10 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 
 	schema "github.com/gorilla/schema"
@@ -100,4 +102,41 @@ func unmarshalSlackRequest(r *http.Request) (slackRequest, error) {
 	}
 
 	return res, nil
+}
+
+type command int
+
+const (
+	GIVE = iota
+)
+
+func (s *server) parseCommand(commandString string) (func() error, error) {
+	endFirstWord := strings.Index(commandString, " ")
+	verb := commandString[:endFirstWord]
+	args := strings.Split(commandString[endFirstWord+1:], " ")
+
+	switch strings.ToLower(verb) {
+	case "give":
+		return newGiveCommand(s, args)
+	default:
+		return nil, fmt.Errorf("could not find a command \"%s\"", verb)
+	}
+}
+
+func newGiveCommand(s *server, args []string) (func() error, error) {
+	if len(args) != 2 {
+		return nil, fmt.Errorf("Give command expected 2 arguments, got %d", len(args))
+	}
+
+	// recipient := args[0]
+
+	points, err := strconv.ParseInt(args[1], 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("Could not parse point value as integer")
+	}
+
+	return func() error {
+		s.storage.Save(fmt.Sprintf("give %d", points), args)
+		return nil
+	}, nil
 }

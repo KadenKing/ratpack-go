@@ -3,12 +3,15 @@ package main
 import "net/http"
 
 type server struct {
-	router *http.ServeMux
+	router  *http.ServeMux
+	storage storage
 }
 
 func newServer() *server {
 	router := http.NewServeMux()
-	server := &server{router}
+	postgres := newPostgres()
+
+	server := &server{router: router, storage: postgres}
 
 	server.routes()
 	return server
