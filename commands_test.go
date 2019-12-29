@@ -25,7 +25,6 @@ func TestParseCommand(t *testing.T) {
 			input:          "give kaden 250",
 			expectedUser:   "kaden",
 			expectedPoints: 250,
-			expectedError:  "",
 		},
 		{
 			input:         "give kaden",
@@ -34,6 +33,10 @@ func TestParseCommand(t *testing.T) {
 		{
 			input:         "give kaden flajsldkf",
 			expectedError: "Could not parse point value as integer",
+		},
+		{
+			input:         "fakecommand blah blah blah",
+			expectedError: "could not find a command \"fakecommand\"",
 		},
 	}
 
@@ -55,7 +58,6 @@ func TestParseCommand(t *testing.T) {
 		}
 
 		command()
-
 		if storage.user != test.expectedUser {
 			t.Errorf("\nexpected storage to have updated user: %s\ngot: %s\n", test.expectedUser, storage.user)
 		}
