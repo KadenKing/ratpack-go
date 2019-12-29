@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
@@ -16,9 +17,9 @@ func addSlackAuthenticity(h http.HandlerFunc) http.HandlerFunc {
 	signingSecret := os.Getenv("SLACK_SIGNING_SECRET")
 	if signingSecret == "" {
 		log.Println("WARNING: no signing secret")
+		signingSecret = "abcd123"
 	}
 	// Use the testing version of the signing secret. This will not work with slack
-	signingSecret = "abcd123"
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		slackSignedHMAC := r.Header.Get("X-Slack-Signature")
@@ -44,9 +45,10 @@ func addSlackAuthenticity(h http.HandlerFunc) http.HandlerFunc {
 		if !hmac.Equal([]byte(slackSignedHMAC), []byte(expectedMac)) {
 			w.WriteHeader(500)
 			fmt.Fprintf(w, "this message was not authenticated")
+			log.Println("message not authenticated")
 			return
 		}
-
+		r.Body = ioutil.NopCloser(bytes.NewBuffer(b))
 		h(w, r)
 	}
 }

@@ -22,6 +22,7 @@ func (s *server) handleGivePoints(slackWriterGenerator slackResponseWriterGenera
 		}
 
 		_, err = fmt.Fprintf(slackWriter, "you added points")
+		fmt.Println("send them the points")
 		if err != nil {
 			log.Fatal(err)
 		}
