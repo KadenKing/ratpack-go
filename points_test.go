@@ -67,7 +67,6 @@ func TestHandleGivePoints(t *testing.T) {
 		{
 			params: getTestSlackParameters(
 				[2]string{"response_url", "abc123"},
-				[2]string{"text", "kaden 250"},
 			),
 			expectedWritten: "you added points",
 			expectedStatus:  200,
@@ -95,9 +94,15 @@ func TestHandleGivePoints(t *testing.T) {
 			return slackWriter
 		}
 
+		pointCommandGenerator := func(command pointCommand, storage storage) func(string) error {
+			return func(arguments string) error {
+				return nil
+			}
+		}
+
 		rr := httptest.NewRecorder()
 		testServer := newTestServer()
-		handler := http.HandlerFunc(testServer.handleGivePoints(slackWriterGenerator))
+		handler := http.HandlerFunc(testServer.handleGivePoints(slackWriterGenerator, pointCommandGenerator))
 
 		handler.ServeHTTP(rr, req)
 

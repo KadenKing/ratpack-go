@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func (s *server) handleGivePoints(slackWriterGenerator slackResponseWriterGenerator) http.HandlerFunc {
+func (s *server) handleGivePoints(slackWriterGenerator slackResponseWriterGenerator, pointCommandGenerator pointsCommandGenerator) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		sr, err := unmarshalSlackRequest(r)
 		slackWriter := slackWriterGenerator(sr.ResponseURL)
@@ -21,12 +21,13 @@ func (s *server) handleGivePoints(slackWriterGenerator slackResponseWriterGenera
 			return
 		}
 		fmt.Printf("\n%s\n", sr.Text)
-		command, err := s.parseCommand(sr.Text)
+
+		command := pointCommandGenerator(GIVE, s.storage)
 		if err != nil {
 			fmt.Fprintf(w, "error: %s", err.Error())
 			return
 		}
-		command()
+		command(sr.Text)
 
 		_, err = fmt.Fprintf(slackWriter, "you added points")
 
