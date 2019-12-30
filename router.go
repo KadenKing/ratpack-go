@@ -2,10 +2,6 @@ package main
 
 import "net/http"
 
-type middlewareRouter interface {
-	HandleFunc(route string, h http.HandlerFunc)
-}
-
 type router struct {
 	mux *http.ServeMux
 }
@@ -15,5 +11,5 @@ func newRouter() router {
 }
 
 func (s *server) routes() {
-	s.router.HandleFunc("/api/give", addSlackAuthenticity(s.handleGivePoints(newSlackWriterGenerator(), newPointsCommandGenerator())))
+	s.router.HandleFunc("/api/give", s.addSlackAuthenticity(s.handleGivePoints(newSlackWriterGenerator(), newPointsCommandGenerator())))
 }

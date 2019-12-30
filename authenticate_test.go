@@ -18,6 +18,12 @@ token=KYFf0k2jd7qroRnIxWt4sqDg&team_id=TJP5Y3A3V&team_domain=peskypockers&channe
 Basestring: v0:1576788841:token=KYFf0k2jd7qroRnIxWt4sqDg&team_id=TJP5Y3A3V&team_domain=peskypockers&channel_id=DK0JX3HQ8&channel_name=directmessage&user_id=UK2DV0U2K&user_name=kaden.king.king&command=%2Fgive&text=kaden+250&response_url=https%3A%2F%2Fhooks.slack.com%2Fcommands%2FTJP5Y3A3V%2F881047631104%2FZo0shoWQHRGzY21OeT3BWr1p&trigger_id=880590990212.635202112131.e64522e9f0ed0a991af428716d6cdd6a
 **/
 
+type fakeEnv struct{}
+
+func (e *fakeEnv) Get(key string) string {
+	return "abcd123"
+}
+
 func createHMAC(value, key string) string {
 	hmac := hmac.New(sha256.New, []byte(key))
 	hmac.Write([]byte(value))
@@ -45,6 +51,8 @@ func TestAddSlackAuthentication(t *testing.T) {
 	}
 
 	for _, currentTest := range tests {
+		server := &server{env: &fakeEnv{}}
+
 		spyHandlerActiviated := false
 		body := currentTest.body
 
@@ -63,7 +71,7 @@ func TestAddSlackAuthentication(t *testing.T) {
 		}
 
 		rr := httptest.NewRecorder()
-		handler := http.HandlerFunc(addSlackAuthenticity(spyMiddleware))
+		handler := http.HandlerFunc(server.addSlackAuthenticity(spyMiddleware))
 		handler.ServeHTTP(rr, req)
 
 		if spyHandlerActiviated != currentTest.expected {

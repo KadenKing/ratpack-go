@@ -5,13 +5,16 @@ import "net/http"
 type server struct {
 	router  *http.ServeMux
 	storage storage
+	env     environment
 }
 
 func newServer() *server {
+	env := newEnv()
 	router := http.NewServeMux()
-	postgres := newMongodb()
+	mongodb := newMongodb(env)
 
-	server := &server{router: router, storage: postgres}
+	server := &server{router: router}
+	server.storage = mongodb
 
 	server.routes()
 	return server

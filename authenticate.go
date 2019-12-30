@@ -9,12 +9,11 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 )
 
-func addSlackAuthenticity(h http.HandlerFunc) http.HandlerFunc {
-	signingSecret := os.Getenv("SLACK_SIGNING_SECRET")
+func (s *server) addSlackAuthenticity(h http.HandlerFunc) http.HandlerFunc {
+	signingSecret := s.env.Get("SLACK_SIGNING_SECRET")
 	if signingSecret == "" {
 		log.Println("WARNING: no signing secret")
 		signingSecret = "abcd123"
