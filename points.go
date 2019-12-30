@@ -20,9 +20,16 @@ func (s *server) handleGivePoints(slackWriterGenerator slackResponseWriterGenera
 			fmt.Fprint(w, "no response url given")
 			return
 		}
+		fmt.Printf("\n%s\n", sr.Text)
+		command, err := s.parseCommand(sr.Text)
+		if err != nil {
+			fmt.Fprintf(w, "error: %s", err.Error())
+			return
+		}
+		command()
 
 		_, err = fmt.Fprintf(slackWriter, "you added points")
-		fmt.Println("send them the points")
+
 		if err != nil {
 			log.Fatal(err)
 		}

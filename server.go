@@ -9,7 +9,7 @@ type server struct {
 
 func newServer() *server {
 	router := http.NewServeMux()
-	postgres := newPostgres()
+	postgres := newMongodb()
 
 	server := &server{router: router, storage: postgres}
 

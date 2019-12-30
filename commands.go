@@ -7,16 +7,9 @@ import (
 )
 
 func (s *server) parseCommand(commandString string) (func() error, error) {
-	endFirstWord := strings.Index(commandString, " ")
-	verb := commandString[:endFirstWord]
-	args := strings.Split(commandString[endFirstWord+1:], " ")
+	args := strings.Split(commandString, " ")
 
-	switch strings.ToLower(verb) {
-	case "give":
-		return newGiveCommand(s.storage, args)
-	default:
-		return nil, fmt.Errorf("could not find a command \"%s\"", verb)
-	}
+	return newGiveCommand(s.storage, args)
 }
 
 func newGiveCommand(pi pointIncrementer, args []string) (func() error, error) {
