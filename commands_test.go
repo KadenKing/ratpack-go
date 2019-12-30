@@ -3,13 +3,11 @@ package main
 import "testing"
 
 type mockDatabase struct {
-	user   string
-	points int64
+	change pointChange
 }
 
-func (d *mockDatabase) IncrementPoints(user string, points int64) error {
-	d.user = user
-	d.points += points
+func (d *mockDatabase) IncrementPoints(pc pointChange) error {
+	d.change = pc
 	return nil
 }
 
@@ -17,41 +15,39 @@ func TestParseCommand(t *testing.T) {
 	type test struct {
 		command        pointCommand
 		input          string
-		expectedUser   string
-		expectedPoints int64
+		expectedChange pointChange
 		expectedError  string
 	}
 	tests := []test{
 		{
 			command:        GIVE,
-			input:          "kaden 250",
-			expectedUser:   "kaden",
-			expectedPoints: 250,
+			input:          "kaden 250 being a good boy",
+			expectedChange: pointChange{user: "kaden", points: 250, reason: "being a good boy", userChanging: "test"},
 		},
 		{
 			command:       GIVE,
 			input:         "kaden",
-			expectedError: "Give command expected 2 arguments, got 1",
+			expectedError: "Error: Too few arguments",
 		},
 		{
 			command:       GIVE,
-			input:         "kaden flajsldkf",
+			input:         "kaden flajsldkf lfjasdklfjlakjsf",
 			expectedError: "Could not parse point value as integer",
 		},
 		{
 			command:       -1,
-			input:         "kaden 250",
+			input:         "kaden 250 being a good boy",
 			expectedError: "unsupported command",
 		},
 	}
 
 	for _, test := range tests {
 		storage := &mockDatabase{}
-		// server := &server{storage: storage}
 		commandGenerator := newPointsCommandGenerator()
 		command := commandGenerator(test.command, storage)
 
-		err := command(test.input)
+		pd := pointData{user: "test", arguments: test.input}
+		err := command(pd)
 
 		if len(test.expectedError) == 0 && err != nil {
 			// wasn't expecting an error but got one anyway
@@ -61,11 +57,8 @@ func TestParseCommand(t *testing.T) {
 			t.Errorf("\n expected error: %s\ngot: %s\n", test.expectedError, err.Error())
 		}
 
-		if storage.user != test.expectedUser {
-			t.Errorf("\nexpected storage to have updated user: %s\ngot: %s\n", test.expectedUser, storage.user)
-		}
-		if storage.points != test.expectedPoints {
-			t.Errorf("\nexpected storage to have updated points: %d\ngot: %d\n", test.expectedPoints, storage.points)
+		if storage.change != test.expectedChange {
+			t.Errorf("\nexpected storage to have: %v\ngot: %v\n", test.expectedChange, storage.change)
 		}
 	}
 }

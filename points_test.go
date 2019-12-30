@@ -24,7 +24,7 @@ trigger_id=876217331607.635202112131.776d240216a617135974615d3ace76e8
 
 type fakeData struct{}
 
-func (d *fakeData) IncrementPoints(name string, points int64) error {
+func (d *fakeData) IncrementPoints(pc pointChange) error {
 	return nil
 }
 
@@ -94,8 +94,8 @@ func TestHandleGivePoints(t *testing.T) {
 			return slackWriter
 		}
 
-		pointCommandGenerator := func(command pointCommand, storage storage) func(string) error {
-			return func(arguments string) error {
+		pointCommandGenerator := func(command pointCommand, storage storage) func(pointData) error {
+			return func(pd pointData) error {
 				return nil
 			}
 		}

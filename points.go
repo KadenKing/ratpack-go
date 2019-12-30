@@ -27,7 +27,8 @@ func (s *server) handleGivePoints(slackWriterGenerator slackResponseWriterGenera
 			fmt.Fprintf(w, "error: %s", err.Error())
 			return
 		}
-		command(sr.Text)
+		pd := pointData{user: sr.UserName, arguments: sr.Text}
+		command(pd)
 
 		_, err = fmt.Fprintf(slackWriter, "you added points")
 

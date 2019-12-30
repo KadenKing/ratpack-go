@@ -10,16 +10,24 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+type pointChange struct {
+	user         string
+	points       int64
+	reason       string
+	userChanging string
+}
+
 type storage interface {
 	pointIncrementer
 }
 
 type pointIncrementer interface {
-	IncrementPoints(user string, points int64) error
+	IncrementPoints(pc pointChange) error
 }
 
 type mongodb struct {
 	points *mongo.Collection
+	log    *mongo.Collection
 }
 
 func newMongodb(env environment) *mongodb {
@@ -29,14 +37,21 @@ func newMongodb(env environment) *mongodb {
 	if err != nil {
 		log.Fatal(err)
 	}
-	points := client.Database("ratpack").Collection("points")
-	return &mongodb{points}
+	db := client.Database("ratpack")
+	points := db.Collection("points")
+	log := db.Collection("log")
+	return &mongodb{points, log}
 }
 
-func (p *mongodb) IncrementPoints(user string, points int64) error {
+func (p *mongodb) IncrementPoints(pc pointChange) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 	var options options.UpdateOptions
-	p.points.UpdateOne(ctx, bson.M{"user": user}, bson.M{"$inc": bson.M{"points": points}}, options.SetUpsert(true))
+	_, err := p.points.UpdateOne(ctx, bson.M{"user": pc.user}, bson.M{"$inc": bson.M{"points": pc.points}}, options.SetUpsert(true))
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
