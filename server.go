@@ -13,7 +13,7 @@ func newServer() *server {
 	router := http.NewServeMux()
 	mongodb := newMongodb(env)
 
-	server := &server{router: router}
+	server := &server{router: router, env: env}
 	server.storage = mongodb
 
 	server.routes()

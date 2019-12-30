@@ -23,7 +23,8 @@ type mongodb struct {
 }
 
 func newMongodb(env environment) *mongodb {
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(env.Get("MONGODB_URI")))
 	if err != nil {
 		log.Fatal(err)
@@ -33,7 +34,8 @@ func newMongodb(env environment) *mongodb {
 }
 
 func (p *mongodb) IncrementPoints(user string, points int64) error {
-	ctx, _ := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
 	var options options.UpdateOptions
 	p.points.UpdateOne(ctx, bson.M{"user": user}, bson.M{"$inc": bson.M{"points": points}}, options.SetUpsert(true))
 	return nil
