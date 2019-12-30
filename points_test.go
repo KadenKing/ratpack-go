@@ -22,8 +22,15 @@ response_url=https%3A%2F%2Fhooks.slack.com%2Fcommands%2FTJP5Y3A3V%2F862889225923
 trigger_id=876217331607.635202112131.776d240216a617135974615d3ace76e8
 **/
 
+type fakeData struct{}
+
+func (d *fakeData) IncrementPoints(name string, points int64) error {
+	return nil
+}
+
 func newTestServer() *server {
-	return &server{}
+	storage := &fakeData{}
+	return &server{storage: storage}
 }
 
 func getTestSlackParameters(vals ...[2]string) url.Values {
@@ -60,6 +67,7 @@ func TestHandleGivePoints(t *testing.T) {
 		{
 			params: getTestSlackParameters(
 				[2]string{"response_url", "abc123"},
+				[2]string{"text", "kaden 250"},
 			),
 			expectedWritten: "you added points",
 			expectedStatus:  200,

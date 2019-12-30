@@ -22,21 +22,17 @@ func TestParseCommand(t *testing.T) {
 	}
 	tests := []test{
 		{
-			input:          "give kaden 250",
+			input:          "kaden 250",
 			expectedUser:   "kaden",
 			expectedPoints: 250,
 		},
 		{
-			input:         "give kaden",
+			input:         "kaden",
 			expectedError: "Give command expected 2 arguments, got 1",
 		},
 		{
-			input:         "give kaden flajsldkf",
+			input:         "kaden flajsldkf",
 			expectedError: "Could not parse point value as integer",
-		},
-		{
-			input:         "fakecommand blah blah blah",
-			expectedError: "could not find a command \"fakecommand\"",
 		},
 	}
 
