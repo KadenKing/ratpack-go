@@ -101,8 +101,8 @@ func TestHandleGivePoints(t *testing.T) {
 			return slackWriter
 		}
 
-		pointCommandGenerator := func(command pointCommand, storage storage) func(pointData) error {
-			return func(pd pointData) error {
+		pointCommandGenerator := func(command pointCommand, storage storage) func(slackRequest) error {
+			return func(sr slackRequest) error {
 				return nil
 			}
 		}

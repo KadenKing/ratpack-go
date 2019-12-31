@@ -15,14 +15,16 @@ func TestParseCommand(t *testing.T) {
 	type test struct {
 		command        pointCommand
 		input          string
+		userChanging   string
 		expectedChange pointChange
 		expectedError  string
 	}
 	tests := []test{
 		{
 			command:        GIVE,
+			userChanging:   "1234",
 			input:          "kaden 250 being a good boy",
-			expectedChange: pointChange{User: "kaden", Points: 250, Reason: "being a good boy", UserChanging: "test"},
+			expectedChange: pointChange{User: "kaden", Points: 250, Reason: "being a good boy", UserChanging: "1234"},
 		},
 		{
 			command:       GIVE,
@@ -46,8 +48,8 @@ func TestParseCommand(t *testing.T) {
 		commandGenerator := newPointsCommandGenerator()
 		command := commandGenerator(test.command, storage)
 
-		pd := pointData{user: "test", arguments: test.input}
-		err := command(pd)
+		sr := slackRequest{UserID: test.userChanging, Text: test.input}
+		err := command(sr)
 
 		if len(test.expectedError) == 0 && err != nil {
 			// wasn't expecting an error but got one anyway

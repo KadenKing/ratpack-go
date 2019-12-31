@@ -13,7 +13,7 @@ const (
 	GIVE = iota
 )
 
-type pointsCommandGenerator func(command pointCommand, storage storage) func(data pointData) error
+type pointsCommandGenerator func(command pointCommand, storage storage) func(sr slackRequest) error
 
 type pointData struct {
 	arguments string
@@ -21,12 +21,12 @@ type pointData struct {
 }
 
 func newPointsCommandGenerator() pointsCommandGenerator {
-	return func(command pointCommand, storage storage) func(data pointData) error {
+	return func(command pointCommand, storage storage) func(sr slackRequest) error {
 		switch command {
 		case GIVE:
 			return newGiveCommand(storage)
 		default:
-			return func(data pointData) error {
+			return func(sr slackRequest) error {
 				return errors.New("unsupported command")
 			}
 
@@ -42,11 +42,11 @@ func getPointAnnotation(spaceNumber int, str string) string {
 	return str
 }
 
-func newGiveCommand(pi pointIncrementer) func(data pointData) error {
-	return func(data pointData) error {
-		pc := pointChange{UserChanging: data.user}
+func newGiveCommand(pi pointIncrementer) func(sr slackRequest) error {
+	return func(sr slackRequest) error {
+		pc := pointChange{UserChanging: sr.UserID}
 
-		args := strings.Split(data.arguments, " ")
+		args := strings.Split(sr.Text, " ")
 		if len(args) < 3 {
 			return errors.New("Error: Too few arguments")
 		}
@@ -59,7 +59,7 @@ func newGiveCommand(pi pointIncrementer) func(data pointData) error {
 		}
 		pc.Points = points
 
-		message := getPointAnnotation(2, data.arguments)
+		message := getPointAnnotation(2, sr.Text)
 
 		if message == "" {
 			return errors.New("Error: reason for points is required")
