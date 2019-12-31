@@ -11,10 +11,10 @@ import (
 )
 
 type pointChange struct {
-	user         string
-	points       int64
-	reason       string
-	userChanging string
+	User         string `bson:"user"`
+	Points       int64  `bson:"points"`
+	Reason       string `bson:"reason"`
+	UserChanging string `bson:"changer"`
 }
 
 type storage interface {
@@ -47,8 +47,26 @@ func (p *mongodb) IncrementPoints(pc pointChange) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 	var options options.UpdateOptions
-	_, err := p.points.UpdateOne(ctx, bson.M{"user": pc.user}, bson.M{"$inc": bson.M{"points": pc.points}}, options.SetUpsert(true))
+	_, err := p.points.UpdateOne(ctx, bson.M{"user": pc.User}, bson.M{"$inc": bson.M{"points": pc.Points}}, options.SetUpsert(true))
 
+	if err != nil {
+		return err
+	}
+
+	err = logPointChange(p.log, pc)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func logPointChange(log *mongo.Collection, pc pointChange) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	_, err := log.InsertOne(ctx, pc)
 	if err != nil {
 		return err
 	}

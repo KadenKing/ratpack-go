@@ -22,7 +22,7 @@ func TestParseCommand(t *testing.T) {
 		{
 			command:        GIVE,
 			input:          "kaden 250 being a good boy",
-			expectedChange: pointChange{user: "kaden", points: 250, reason: "being a good boy", userChanging: "test"},
+			expectedChange: pointChange{User: "kaden", Points: 250, Reason: "being a good boy", UserChanging: "test"},
 		},
 		{
 			command:       GIVE,
