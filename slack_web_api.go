@@ -19,7 +19,7 @@ type slackProfileResponse struct {
 }
 
 type slackAPI interface {
-	GetProfileByID(id string) string
+	GetProfileByID(id string) (string, error)
 }
 
 func newSlackAPI(e environment) *slackConnection {

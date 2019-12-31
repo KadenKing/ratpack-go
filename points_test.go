@@ -28,9 +28,16 @@ func (d *fakeData) IncrementPoints(pc pointChange) error {
 	return nil
 }
 
+type fakeSlackAPI struct{}
+
+func (s *fakeSlackAPI) GetProfileByID(id string) (string, error) {
+	return "thrifty watermelon", nil
+}
+
 func newTestServer() *server {
 	storage := &fakeData{}
-	return &server{storage: storage}
+	slackAPI := &fakeSlackAPI{}
+	return &server{storage: storage, slackAPI: slackAPI}
 }
 
 func getTestSlackParameters(vals ...[2]string) url.Values {
@@ -68,7 +75,7 @@ func TestHandleGivePoints(t *testing.T) {
 			params: getTestSlackParameters(
 				[2]string{"response_url", "abc123"},
 			),
-			expectedWritten: "you added points",
+			expectedWritten: "thrifty watermelon added points",
 			expectedStatus:  200,
 			expectedBody:    "",
 		},

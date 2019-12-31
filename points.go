@@ -30,7 +30,12 @@ func (s *server) handleGivePoints(slackWriterGenerator slackResponseWriterGenera
 		pd := pointData{user: sr.UserID, arguments: sr.Text}
 		command(pd)
 
-		_, err = fmt.Fprintf(slackWriter, "you added points")
+		userWhoAddedPoints, err := s.slackAPI.GetProfileByID(sr.UserID)
+		if err != nil {
+			fmt.Fprint(w, "error: could not figure out who added points")
+		}
+
+		_, err = fmt.Fprintf(slackWriter, "%s added points", userWhoAddedPoints)
 
 		if err != nil {
 			log.Fatal(err)
