@@ -32,15 +32,7 @@ func newGiveCommandParserGenerator() func() giveCommandParser {
 	}
 }
 
-func test(generator func() whoDidWhatParser) {
-	return
-}
-
 func (p giveCommandParser) Parse(sr slackRequest, idTranslater slackIDTranslater) (whoDidWhat, error) {
-	test(func() whoDidWhatParser {
-		return giveCommandParser{}
-	})
-
 	did := "gave"
 
 	args := strings.Split(sr.Text, " ")

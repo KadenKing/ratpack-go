@@ -22,22 +22,8 @@ response_url=https%3A%2F%2Fhooks.slack.com%2Fcommands%2FTJP5Y3A3V%2F862889225923
 trigger_id=876217331607.635202112131.776d240216a617135974615d3ace76e8
 **/
 
-type fakeData struct{}
-
-func (d *fakeData) IncrementPoints(pc pointChange) error {
-	return nil
-}
-
-type fakeSlackAPI struct{}
-
-func (s *fakeSlackAPI) GetProfileByID(id string) (string, error) {
-	return "thrifty watermelon", nil
-}
-
 func newTestServer() *server {
-	storage := &fakeData{}
-	slackAPI := &fakeSlackAPI{}
-	return &server{storage: storage, slackAPI: slackAPI}
+	return &server{}
 }
 
 func getTestSlackParameters(vals ...[2]string) url.Values {

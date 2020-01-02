@@ -2,15 +2,6 @@ package main
 
 import "testing"
 
-type mockDatabase struct {
-	change pointChange
-}
-
-func (d *mockDatabase) IncrementPoints(pc pointChange) error {
-	d.change = pc
-	return nil
-}
-
 type fakeTranslater struct{}
 
 func (p *fakeTranslater) GetProfileByID(id string) (string, error) {
