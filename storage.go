@@ -22,7 +22,7 @@ type storage interface {
 }
 
 type pointIncrementer interface {
-	IncrementPoints(pc pointChange) error
+	IncrementPoints(userID string, pointValue int64) error
 }
 
 type mongodb struct {
@@ -43,17 +43,11 @@ func newMongodb(env environment) *mongodb {
 	return &mongodb{points, log}
 }
 
-func (p *mongodb) IncrementPoints(pc pointChange) error {
+func (p *mongodb) IncrementPoints(userID string, pointValue int64) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 	var options options.UpdateOptions
-	_, err := p.points.UpdateOne(ctx, bson.M{"user": pc.User}, bson.M{"$inc": bson.M{"points": pc.Points}}, options.SetUpsert(true))
-
-	if err != nil {
-		return err
-	}
-
-	err = logPointChange(p.log, pc)
+	_, err := p.points.UpdateOne(ctx, bson.M{"user": userID}, bson.M{"$inc": bson.M{"points": pointValue}}, options.SetUpsert(true))
 
 	if err != nil {
 		return err

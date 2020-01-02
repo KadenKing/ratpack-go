@@ -30,6 +30,8 @@ func (s *server) handleGivePoints(slackWriterGenerator slackResponseWriterGenera
 			fmt.Fprint(w, "error: could not figure out who added points")
 		}
 
+		err = s.storage.IncrementPoints(sr.UserID, whoDidWhat.points)
+
 		userWhoAddedPoints := whoDidWhat.who
 		_, err = fmt.Fprintf(slackWriter, "%s added points", userWhoAddedPoints)
 

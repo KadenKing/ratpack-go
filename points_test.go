@@ -22,8 +22,14 @@ response_url=https%3A%2F%2Fhooks.slack.com%2Fcommands%2FTJP5Y3A3V%2F862889225923
 trigger_id=876217331607.635202112131.776d240216a617135974615d3ace76e8
 **/
 
+type testStorage struct{}
+
+func (s *testStorage) IncrementPoints(userID string, pointValue int64) error {
+	return nil
+}
+
 func newTestServer() *server {
-	return &server{}
+	return &server{storage: &testStorage{}}
 }
 
 func getTestSlackParameters(vals ...[2]string) url.Values {

@@ -75,33 +75,3 @@ func getPointAnnotation(spaceNumber int, str string) string {
 	}
 	return str
 }
-
-func newGiveCommand(pi pointIncrementer) func(sr slackRequest) error {
-	return func(sr slackRequest) error {
-		pc := pointChange{UserChanging: sr.UserID}
-
-		args := strings.Split(sr.Text, " ")
-		if len(args) < 3 {
-			return errors.New("Error: Too few arguments")
-		}
-
-		pc.User = args[0]
-
-		points, err := strconv.ParseInt(args[1], 10, 32)
-		if err != nil {
-			return fmt.Errorf("Could not parse point value as integer")
-		}
-		pc.Points = points
-
-		message := getPointAnnotation(2, sr.Text)
-
-		if message == "" {
-			return errors.New("Error: reason for points is required")
-		}
-
-		pc.Reason = message
-
-		err = pi.IncrementPoints(pc)
-		return err
-	}
-}
