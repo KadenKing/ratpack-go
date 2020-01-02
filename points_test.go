@@ -28,6 +28,10 @@ func (s *testStorage) IncrementPoints(userID string, pointValue int64) error {
 	return nil
 }
 
+func (s *testStorage) LogChange(userID string, wdw whoDidWhat) error {
+	return nil
+}
+
 func newTestServer() *server {
 	return &server{storage: &testStorage{}}
 }
@@ -57,7 +61,7 @@ func (b *testSlackWriter) Write(p []byte) (n int, err error) {
 type testParser struct{}
 
 func (p *testParser) Parse(sr slackRequest, idTranslater slackIDTranslater) (whoDidWhat, error) {
-	return whoDidWhat{who: "thrifty watermelon"}, nil
+	return whoDidWhat{Who: "thrifty watermelon"}, nil
 }
 
 func TestHandleGivePoints(t *testing.T) {

@@ -18,7 +18,7 @@ func TestParseCommand(t *testing.T) {
 	tests := []test{
 		{
 			input:              slackRequest{Text: "kaden 250 being good", UserID: "1234"},
-			expectedWhoDidWhat: whoDidWhat{who: "tester", did: "gave", points: 250, toWhom: "kaden", because: "being good"},
+			expectedWhoDidWhat: whoDidWhat{Who: "tester", Did: "gave", Points: 250, ToWhom: "kaden", Because: "being good"},
 		},
 		{
 			input:         slackRequest{Text: "kaden"},

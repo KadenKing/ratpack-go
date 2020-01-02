@@ -13,11 +13,11 @@ type pointData struct {
 }
 
 type whoDidWhat struct {
-	who     string
-	did     string
-	points  int64
-	toWhom  string
-	because string
+	Who     string `bson:"who"`
+	Did     string `bson:"did"`
+	Points  int64  `bson:"points"`
+	ToWhom  string `bson:"towhom"`
+	Because string `bson:"because"`
 }
 
 type whoDidWhatParser interface {

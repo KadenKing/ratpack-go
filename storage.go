@@ -23,6 +23,7 @@ type storage interface {
 
 type pointIncrementer interface {
 	IncrementPoints(userID string, pointValue int64) error
+	LogChange(userID string, whoDidWhat whoDidWhat) error
 }
 
 type mongodb struct {
@@ -54,6 +55,15 @@ func (p *mongodb) IncrementPoints(userID string, pointValue int64) error {
 	}
 
 	return nil
+}
+
+func (p *mongodb) LogChange(userID string, wdw whoDidWhat) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	_, err := p.log.InsertOne(ctx, bson.M{"user": userID, "whoDidWhat": wdw})
+
+	return err
 }
 
 func logPointChange(log *mongo.Collection, pc pointChange) error {
