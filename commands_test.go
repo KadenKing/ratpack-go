@@ -14,7 +14,7 @@ func (d *mockDatabase) IncrementPoints(pc pointChange) error {
 type fakeTranslater struct{}
 
 func (p *fakeTranslater) GetProfileByID(id string) (string, error) {
-	return "1234", nil
+	return "tester", nil
 }
 
 func TestParseCommand(t *testing.T) {
@@ -26,7 +26,7 @@ func TestParseCommand(t *testing.T) {
 	}
 	tests := []test{
 		{
-			input:              slackRequest{Text: "give kaden 250 being good", UserID: "1234"},
+			input:              slackRequest{Text: "kaden 250 being good", UserID: "1234"},
 			expectedWhoDidWhat: whoDidWhat{who: "tester", did: "gave", points: 250, toWhom: "kaden", because: "being good"},
 		},
 		// {

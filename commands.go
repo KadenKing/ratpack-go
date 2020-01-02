@@ -7,14 +7,6 @@ import (
 	"strings"
 )
 
-type pointCommand int
-
-const (
-	GIVE = iota
-)
-
-type pointsCommandGenerator func(command pointCommand, storage storage) func(sr slackRequest) error
-
 type pointData struct {
 	arguments string
 	user      string
@@ -49,7 +41,7 @@ func (p giveCommandParser) Parse(sr slackRequest, idTranslater slackIDTranslater
 		return giveCommandParser{}
 	})
 
-	did := "give"
+	did := "gave"
 
 	args := strings.Split(sr.Text, " ")
 	if len(args) < 3 {
@@ -82,20 +74,6 @@ func (p giveCommandParser) Parse(sr slackRequest, idTranslater slackIDTranslater
 		toWhom,
 		because,
 	}, nil
-}
-
-func newPointsCommandGenerator() pointsCommandGenerator {
-	return func(command pointCommand, storage storage) func(sr slackRequest) error {
-		switch command {
-		case GIVE:
-			return newGiveCommand(storage)
-		default:
-			return func(sr slackRequest) error {
-				return errors.New("unsupported command")
-			}
-
-		}
-	}
 }
 
 func getPointAnnotation(spaceNumber int, str string) string {
