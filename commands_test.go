@@ -20,21 +20,14 @@ func TestParseCommand(t *testing.T) {
 			input:              slackRequest{Text: "kaden 250 being good", UserID: "1234"},
 			expectedWhoDidWhat: whoDidWhat{who: "tester", did: "gave", points: 250, toWhom: "kaden", because: "being good"},
 		},
-		// {
-		// 	command:       GIVE,
-		// 	input:         "kaden",
-		// 	expectedError: "Error: Too few arguments",
-		// },
-		// {
-		// 	command:       GIVE,
-		// 	input:         "kaden flajsldkf lfjasdklfjlakjsf",
-		// 	expectedError: "Could not parse point value as integer",
-		// },
-		// {
-		// 	command:       -1,
-		// 	input:         "kaden 250 being a good boy",
-		// 	expectedError: "unsupported command",
-		// },
+		{
+			input:         slackRequest{Text: "kaden"},
+			expectedError: "Error: Too few arguments",
+		},
+		{
+			input:         slackRequest{Text: "kaden fjlaksjflk being good"},
+			expectedError: "Could not parse point value as integer",
+		},
 	}
 
 	for _, test := range tests {
