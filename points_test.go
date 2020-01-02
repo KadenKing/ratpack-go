@@ -65,7 +65,7 @@ func (b *testSlackWriter) Write(p []byte) (n int, err error) {
 type testParser struct{}
 
 func (p *testParser) Parse(sr slackRequest, idTranslater slackIDTranslater) (whoDidWhat, error) {
-	return whoDidWhat{}, nil
+	return whoDidWhat{who: "thrifty watermelon"}, nil
 }
 
 func TestHandleGivePoints(t *testing.T) {
