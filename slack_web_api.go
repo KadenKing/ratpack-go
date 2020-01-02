@@ -19,6 +19,10 @@ type slackProfileResponse struct {
 }
 
 type slackAPI interface {
+	slackIDTranslater
+}
+
+type slackIDTranslater interface {
 	GetProfileByID(id string) (string, error)
 }
 

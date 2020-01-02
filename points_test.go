@@ -62,6 +62,12 @@ func (b *testSlackWriter) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
+type testParser struct{}
+
+func (p *testParser) Parse(sr slackRequest, idTranslater slackIDTranslater) (whoDidWhat, error) {
+	return whoDidWhat{}, nil
+}
+
 func TestHandleGivePoints(t *testing.T) {
 	type test struct {
 		params          url.Values
@@ -101,15 +107,13 @@ func TestHandleGivePoints(t *testing.T) {
 			return slackWriter
 		}
 
-		pointCommandGenerator := func(command pointCommand, storage storage) func(slackRequest) error {
-			return func(sr slackRequest) error {
-				return nil
-			}
+		parserGenerator := func() whoDidWhatParser {
+			return &testParser{}
 		}
 
 		rr := httptest.NewRecorder()
 		testServer := newTestServer()
-		handler := http.HandlerFunc(testServer.handleGivePoints(slackWriterGenerator, pointCommandGenerator))
+		handler := http.HandlerFunc(testServer.handleGivePoints(slackWriterGenerator, parserGenerator))
 
 		handler.ServeHTTP(rr, req)
 

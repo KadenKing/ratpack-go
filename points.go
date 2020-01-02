@@ -6,8 +6,10 @@ import (
 	"net/http"
 )
 
-func (s *server) handleGivePoints(slackWriterGenerator slackResponseWriterGenerator, pointCommandGenerator pointsCommandGenerator) http.HandlerFunc {
+func (s *server) handleGivePoints(slackWriterGenerator slackResponseWriterGenerator, giveCommandParserGenerator func() whoDidWhatParser) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		giveCommandParser := giveCommandParserGenerator()
+
 		sr, err := unmarshalSlackRequest(r)
 		slackWriter := slackWriterGenerator(sr.ResponseURL)
 
@@ -22,15 +24,9 @@ func (s *server) handleGivePoints(slackWriterGenerator slackResponseWriterGenera
 		}
 		fmt.Printf("\n%s\n", sr.Text)
 
-		command := pointCommandGenerator(GIVE, s.storage)
-		if err != nil {
-			fmt.Fprintf(w, "error: %s", err.Error())
-			return
-		}
+		whoDidWhat, err := giveCommandParser.Parse(sr, s.slackAPI)
 
-		command(sr)
-
-		userWhoAddedPoints, err := s.slackAPI.GetProfileByID(sr.UserID)
+		userWhoAddedPoints := whoDidWhat.who
 		if err != nil {
 			fmt.Fprint(w, "error: could not figure out who added points")
 		}
