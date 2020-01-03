@@ -9,7 +9,8 @@ import (
 )
 
 type slackProfile struct {
-	RealNameNormalized string `json:"real_name_normalized"`
+	RealNameNormalized    string `json:"real_name_normalized"`
+	DisplayNameNormalized string `json:"display_name_normalized"`
 }
 
 type slackProfileResponse struct {
@@ -19,9 +20,10 @@ type slackProfileResponse struct {
 }
 
 type slackMembersResponse struct {
-	ID       string `json:"id"`
-	Name     string `json:"name"`
-	RealName string `json:"real_name"`
+	ID       string       `json:"id"`
+	Name     string       `json:"name"`
+	RealName string       `json:"real_name"`
+	Profile  slackProfile `json:"profile"`
 }
 
 type slackUsersListResponse struct {
@@ -35,6 +37,7 @@ type slackAPI interface {
 
 type slackIDTranslater interface {
 	GetProfileByID(id string) (string, error)
+	GetProfileByUsername(username string) (slackMembersResponse, error)
 }
 
 func newSlackAPI(e environment) *slackConnection {
@@ -60,7 +63,7 @@ func searchUsersForUsernameID(username string, members []slackMembersResponse) (
 	return slackMembersResponse{}, false
 }
 
-func (s *slackConnection) GetIDByUsername(username string) (slackMembersResponse, error) {
+func (s *slackConnection) GetProfileByUsername(username string) (slackMembersResponse, error) {
 	reqURL, err := url.Parse("https://slack.com/api/users.list")
 	if err != nil {
 		return slackMembersResponse{}, err
@@ -83,7 +86,7 @@ func (s *slackConnection) GetIDByUsername(username string) (slackMembersResponse
 		return slackMembersResponse{}, errors.New("response not ok")
 	}
 
-	member, ok := searchUsersForUsernameID(username, response.Members)
+	member, ok := searchUsersForUsernameID(username[1:], response.Members)
 
 	if !ok {
 		return slackMembersResponse{}, errors.New("could not find a username with that name")
@@ -115,5 +118,5 @@ func (s *slackConnection) GetProfileByID(id string) (string, error) {
 	if !response.Ok {
 		return "", errors.New(response.Error)
 	}
-	return response.Profile.RealNameNormalized, nil
+	return response.Profile.DisplayNameNormalized, nil
 }

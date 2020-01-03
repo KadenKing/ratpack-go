@@ -13,11 +13,13 @@ type pointData struct {
 }
 
 type whoDidWhat struct {
-	Who     string `bson:"who"`
-	Did     string `bson:"did"`
-	Points  int64  `bson:"points"`
-	ToWhom  string `bson:"towhom"`
-	Because string `bson:"because"`
+	Who      string `bson:"who"`
+	WhoID    string `bson:"who_id"`
+	Did      string `bson:"did"`
+	Points   int64  `bson:"points"`
+	ToWhom   string `bson:"towhom"`
+	ToWhomID string `bson:"towhom_id"`
+	Because  string `bson:"because"`
 }
 
 type whoDidWhatParser interface {
@@ -54,17 +56,26 @@ func (p giveCommandParser) Parse(sr slackRequest, idTranslater slackIDTranslater
 	}
 
 	who, err := idTranslater.GetProfileByID(sr.UserID)
-
 	if err != nil {
 		return whoDidWhat{}, nil
 	}
 
+	whoID := sr.UserID
+
+	toWhomProfile, err := idTranslater.GetProfileByUsername(toWhom)
+
+	if err != nil {
+		return whoDidWhat{}, err
+	}
+
 	return whoDidWhat{
-		Who:     who,
-		Did:     did,
-		Points:  points,
-		ToWhom:  toWhom,
-		Because: because,
+		Who:      who,
+		WhoID:    whoID,
+		Did:      did,
+		Points:   points,
+		ToWhom:   toWhomProfile.Profile.DisplayNameNormalized,
+		ToWhomID: toWhomProfile.ID,
+		Because:  because,
 	}, nil
 }
 

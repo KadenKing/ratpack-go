@@ -7,6 +7,9 @@ type fakeTranslater struct{}
 func (p *fakeTranslater) GetProfileByID(id string) (string, error) {
 	return "tester", nil
 }
+func (p *fakeTranslater) GetProfileByUsername(username string) (slackMembersResponse, error) {
+	return slackMembersResponse{ID: "1234", Profile: slackProfile{DisplayNameNormalized: "thrifty watermelon"}, Name: "kaden.king.king"}, nil
+}
 
 func TestParseCommand(t *testing.T) {
 
@@ -18,7 +21,7 @@ func TestParseCommand(t *testing.T) {
 	tests := []test{
 		{
 			input:              slackRequest{Text: "kaden 250 being good", UserID: "1234"},
-			expectedWhoDidWhat: whoDidWhat{Who: "tester", Did: "gave", Points: 250, ToWhom: "kaden", Because: "being good"},
+			expectedWhoDidWhat: whoDidWhat{Who: "tester", WhoID: "1234", Did: "gave", Points: 250, ToWhom: "thrifty watermelon", Because: "being good", ToWhomID: "1234"},
 		},
 		{
 			input:         slackRequest{Text: "kaden"},
