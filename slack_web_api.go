@@ -18,6 +18,17 @@ type slackProfileResponse struct {
 	Error   string       `json:"error"`
 }
 
+type slackMembersResponse struct {
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	RealName string `json:"real_name"`
+}
+
+type slackUsersListResponse struct {
+	Ok      bool                   `json:"ok"`
+	Members []slackMembersResponse `json:"members"`
+}
+
 type slackAPI interface {
 	slackIDTranslater
 }
@@ -37,6 +48,48 @@ func newSlackAPI(e environment) *slackConnection {
 
 type slackConnection struct {
 	token string
+}
+
+func searchUsersForUsernameID(username string, members []slackMembersResponse) (slackMembersResponse, bool) {
+	for _, member := range members {
+		if member.Name == username {
+			return member, true
+		}
+	}
+
+	return slackMembersResponse{}, false
+}
+
+func (s *slackConnection) GetIDByUsername(username string) (slackMembersResponse, error) {
+	reqURL, err := url.Parse("https://slack.com/api/users.list")
+	if err != nil {
+		return slackMembersResponse{}, err
+	}
+
+	query := url.Values{}
+	query.Add("token", s.token)
+	reqURL.RawQuery = query.Encode()
+
+	resp, err := http.Get(reqURL.String())
+
+	if err != nil {
+		return slackMembersResponse{}, err
+	}
+
+	var response slackUsersListResponse
+	json.NewDecoder(resp.Body).Decode(&response)
+
+	if !response.Ok {
+		return slackMembersResponse{}, errors.New("response not ok")
+	}
+
+	member, ok := searchUsersForUsernameID(username, response.Members)
+
+	if !ok {
+		return slackMembersResponse{}, errors.New("could not find a username with that name")
+	}
+
+	return member, nil
 }
 
 func (s *slackConnection) GetProfileByID(id string) (string, error) {
