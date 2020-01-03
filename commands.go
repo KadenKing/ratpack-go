@@ -49,15 +49,11 @@ func (p giveCommandParser) Parse(sr slackRequest, idTranslater slackIDTranslater
 		return whoDidWhat{}, fmt.Errorf("Could not parse point value as integer")
 	}
 
-	because := getPointAnnotation(2, sr.Text)
-
-	if because == "" {
-		return whoDidWhat{}, errors.New("Error: reason for points is required")
-	}
+	because := parseReasonAfterSpace(2, sr.Text)
 
 	who, err := idTranslater.GetProfileByID(sr.UserID)
 	if err != nil {
-		return whoDidWhat{}, nil
+		return whoDidWhat{}, err
 	}
 
 	whoID := sr.UserID
@@ -79,7 +75,7 @@ func (p giveCommandParser) Parse(sr slackRequest, idTranslater slackIDTranslater
 	}, nil
 }
 
-func getPointAnnotation(spaceNumber int, str string) string {
+func parseReasonAfterSpace(spaceNumber int, str string) string {
 	for i := 0; i < spaceNumber; i++ {
 		index := strings.Index(str, " ")
 		str = str[index+1:]

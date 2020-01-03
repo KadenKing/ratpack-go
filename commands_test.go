@@ -2,13 +2,21 @@ package main
 
 import "testing"
 
+import "errors"
+
 type fakeTranslater struct{}
 
 func (p *fakeTranslater) GetProfileByID(id string) (string, error) {
-	return "tester", nil
+	if id == "1234" {
+		return "tester", nil
+	}
+	return "", errors.New("could not find user with that id")
 }
 func (p *fakeTranslater) GetProfileByUsername(username string) (slackMembersResponse, error) {
-	return slackMembersResponse{ID: "1234", Profile: slackProfile{DisplayNameNormalized: "thrifty watermelon"}, Name: "kaden.king.king"}, nil
+	if username == "kaden" {
+		return slackMembersResponse{ID: "1234", Profile: slackProfile{DisplayNameNormalized: "thrifty watermelon"}, Name: "kaden.king.king"}, nil
+	}
+	return slackMembersResponse{}, errors.New("could not find user")
 }
 
 func TestParseCommand(t *testing.T) {
@@ -30,6 +38,14 @@ func TestParseCommand(t *testing.T) {
 		{
 			input:         slackRequest{Text: "kaden fjlaksjflk being good"},
 			expectedError: "Could not parse point value as integer",
+		},
+		{
+			input:         slackRequest{Text: "test 250 being bad", UserID: "1234"},
+			expectedError: "could not find user",
+		},
+		{
+			input:         slackRequest{Text: "test 250 being bad", UserID: "4567"},
+			expectedError: "could not find user with that id",
 		},
 	}
 
