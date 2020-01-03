@@ -60,11 +60,11 @@ func (p giveCommandParser) Parse(sr slackRequest, idTranslater slackIDTranslater
 	}
 
 	return whoDidWhat{
-		who,
-		did,
-		points,
-		toWhom,
-		because,
+		Who:     who,
+		Did:     did,
+		Points:  points,
+		ToWhom:  toWhom,
+		Because: because,
 	}, nil
 }
 

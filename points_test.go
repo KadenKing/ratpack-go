@@ -61,7 +61,7 @@ func (b *testSlackWriter) Write(p []byte) (n int, err error) {
 type testParser struct{}
 
 func (p *testParser) Parse(sr slackRequest, idTranslater slackIDTranslater) (whoDidWhat, error) {
-	return whoDidWhat{Who: "thrifty watermelon"}, nil
+	return whoDidWhat{Who: "thrifty watermelon", Points: 65, ToWhom: "me", Because: "no reason"}, nil
 }
 
 func TestHandleGivePoints(t *testing.T) {
@@ -77,7 +77,7 @@ func TestHandleGivePoints(t *testing.T) {
 			params: getTestSlackParameters(
 				[2]string{"response_url", "abc123"},
 			),
-			expectedWritten: "thrifty watermelon added points",
+			expectedWritten: "thrifty watermelon gave 65 points to me. Reason: \"no reason\"",
 			expectedStatus:  200,
 			expectedBody:    "",
 		},

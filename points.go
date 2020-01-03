@@ -27,14 +27,15 @@ func (s *server) handleGivePoints(slackWriterGenerator slackResponseWriterGenera
 		whoDidWhat, err := giveCommandParser.Parse(sr, s.slackAPI)
 
 		if err != nil {
-			fmt.Fprint(w, "error: could not figure out who added points")
+			fmt.Fprint(w, err.Error())
+			return
 		}
 
 		err = s.storage.IncrementPoints(sr.UserID, whoDidWhat.Points)
 		err = s.storage.LogChange(sr.UserID, whoDidWhat)
 
 		userWhoAddedPoints := whoDidWhat.Who
-		_, err = fmt.Fprintf(slackWriter, "%s added points", userWhoAddedPoints)
+		_, err = fmt.Fprintf(slackWriter, "%s gave %d points to %s. Reason: \"%s\"", userWhoAddedPoints, whoDidWhat.Points, whoDidWhat.ToWhom, whoDidWhat.Because)
 
 		if err != nil {
 			log.Fatal(err)
